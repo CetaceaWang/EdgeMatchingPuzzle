@@ -21,8 +21,6 @@ public class Main : MonoBehaviour
     int ans_index = 0;
     void Start()
     {
-        PlayerPrefs.DeleteKey("Ints");
-        playerPrefsInts = PlayerPrefs.GetString("Ints", playerPrefsInts);
         SetInputs();
     }
     public void Solve()
