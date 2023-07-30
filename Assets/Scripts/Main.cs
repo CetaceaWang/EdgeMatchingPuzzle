@@ -1,8 +1,6 @@
 using System;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
-using static UnityEngine.GraphicsBuffer;
 
 public class Main : MonoBehaviour
 {
@@ -10,6 +8,8 @@ public class Main : MonoBehaviour
     string playerPrefsInts;//預設題目
     [SerializeField]
     Transform answers;
+    [SerializeField]
+    GameObject quitButton;
     Transform[] inputs;
     int Num = 9;
     int Dir = 4;
@@ -19,16 +19,22 @@ public class Main : MonoBehaviour
     int[,] Ans_index = new int[60, 10];
     int[,] Ans_dir = new int[60, 10];
     int ans_index = 0;
+    bool[] canEquel = new bool[5];//是否可以等於
     void Start()
     {
+#if UNITY_WEBGL
+        quitButton.SetActive(false);
+#endif
         SetInputs();
     }
     public void Solve()
     {
+        ans_index = 0;
         //先將Answers全部關閉
         for (int i = 0;i<answers.childCount;i++)
             answers.GetChild(i).gameObject.SetActive(false);
         int[,] data = new int[Num, Dir];
+        SetCanEquel();
         for (int i = 0; i < Num; i++)
         {
             //Console.WriteLine("Input num " + (i));
@@ -36,6 +42,8 @@ public class Main : MonoBehaviour
             {
                 //data[i, j] = Convert.ToInt32(Console.ReadLine());
                 data[i, j] = GetInput(i, j);
+                if (data[i, j] < 0)
+                    canEquel[-data[i, j]] = false;
                 //Debug.Log("["+i+"]["+j+"]data[i, j]:" + data[i, j]);
             }
             put_index[i] = -1;
@@ -49,6 +57,17 @@ public class Main : MonoBehaviour
                 count(data, 0, now, dir);
             }
         }
+    }
+    bool CanEquel(int i)
+    {
+        if (i<0)
+            return false;
+        return canEquel[i];
+    }
+    void SetCanEquel()
+    {
+        for (int i = 0; i < canEquel.Length; i++)
+            canEquel[i] = true;
     }
     void count(int[,] data, int pointer, int now, int dir)
     {
@@ -70,56 +89,84 @@ public class Main : MonoBehaviour
                     {
                         case 0:
                             //Console.WriteLine("pointer = 0");
-                            if (data[now, (1 + dir) % 4] + data[i, (3 + j) % 4] == 0)
+                            if ((data[now, (1 + dir) % 4] + data[i, (3 + j) % 4] == 0)
+                                || ((data[now, (1 + dir) % 4] == data[i, (3 + j) % 4])
+                                &&(CanEquel(data[now, (1 + dir) % 4]))))
                             {
                                 count(data, pointer + 1, i, j);
                             }
                             break;
                         case 1:
                             //Console.WriteLine("pointer = 1");
-                            if (data[now, (1 + dir) % 4] + data[i, (3 + j) % 4] == 0)
+                            if ((data[now, (1 + dir) % 4] + data[i, (3 + j) % 4] == 0)
+                                || ((data[now, (1 + dir) % 4] == data[i, (3 + j) % 4] ))
+                                &&(CanEquel(data[now, (1 + dir) % 4])))
                             {
                                 count(data, pointer + 1, i, j);
                             }
                             break;
                         case 2:
                             //Console.WriteLine("pointer = 2");
-                            if (data[put_index[0], (2 + put_dir[0]) % 4] + data[i, (0 + j) % 4] == 0)
+                            if ((data[put_index[0], (2 + put_dir[0]) % 4] + data[i, (0 + j) % 4] == 0)
+                                || ((data[put_index[0], (2 + put_dir[0]) % 4] == data[i, (0 + j) % 4])
+                                &&(CanEquel(data[i, (0 + j) % 4]))))
                             {
                                 count(data, pointer + 1, i, j);
                             }
                             break;
                         case 3:
                             //Console.WriteLine("pointer = 3");
-                            if ((data[now, (1 + dir) % 4] + data[i, (3 + j) % 4] == 0) && (data[put_index[1], (2 + put_dir[1]) % 4] + data[i, (0 + j) % 4] == 0))
+                            if (((data[now, (1 + dir) % 4] + data[i, (3 + j) % 4] == 0)
+                                || ((data[now, (1 + dir) % 4] == data[i, (3 + j) % 4] ))
+                                &&(CanEquel(data[now, (1 + dir) % 4]))) 
+                                && ((data[put_index[1], (2 + put_dir[1]) % 4] + data[i, (0 + j) % 4] == 0)
+                                || ((data[put_index[1], (2 + put_dir[1]) % 4] == data[i, (0 + j) % 4] )
+                                &&(CanEquel(data[i, (0 + j) % 4])))))
                             {
                                 count(data, pointer + 1, i, j);
                             }
                             break;
                         case 4:
                             //Console.WriteLine("pointer = 4");
-                            if ((data[now, (1 + dir) % 4] + data[i, (3 + j) % 4] == 0) && (data[put_index[2], (2 + put_dir[2]) % 4] + data[i, (0 + j) % 4] == 0))
+                            if (((data[now, (1 + dir) % 4] + data[i, (3 + j) % 4] == 0)
+                                || ((data[now, (1 + dir) % 4] == data[i, (3 + j) % 4] )
+                                &&(CanEquel(data[i, (3 + j) % 4]))))
+                                && ((data[put_index[2], (2 + put_dir[2]) % 4] + data[i, (0 + j) % 4] == 0)
+                                || ((data[put_index[2], (2 + put_dir[2]) % 4] == data[i, (0 + j) % 4] )
+                                &&(CanEquel(data[i, (0 + j) % 4])))))
                             {
                                 count(data, pointer + 1, i, j);
                             }
                             break;
                         case 5:
                             //Console.WriteLine("pointer = 5");
-                            if (data[put_index[3], (2 + put_dir[3]) % 4] + data[i, (0 + j) % 4] == 0)
+                            if ((data[put_index[3], (2 + put_dir[3]) % 4] + data[i, (0 + j) % 4] == 0)
+                                || ((data[put_index[3], (2 + put_dir[3]) % 4] == data[i, (0 + j) % 4] )
+                                &&(CanEquel(data[i, (0 + j) % 4]))))
                             {
                                 count(data, pointer + 1, i, j);
                             }
                             break;
                         case 6:
                             //Console.WriteLine("pointer = 6");
-                            if ((data[now, (1 + dir) % 4] + data[i, (3 + j) % 4] == 0) && (data[put_index[4], (2 + put_dir[4]) % 4] + data[i, (0 + j) % 4] == 0))
+                            if (((data[now, (1 + dir) % 4] + data[i, (3 + j) % 4] == 0)
+                                || ((data[now, (1 + dir) % 4] == data[i, (3 + j) % 4])
+                                &&(CanEquel(data[i, (3 + j) % 4])))) 
+                                && ((data[put_index[4], (2 + put_dir[4]) % 4] + data[i, (0 + j) % 4] == 0)
+                                || ((data[put_index[4], (2 + put_dir[4]) % 4] == data[i, (0 + j) % 4] )
+                                &&(CanEquel(data[i, (0 + j) % 4])))))
                             {
                                 count(data, pointer + 1, i, j);
                             }
                             break;
                         case 7:
                             //Console.WriteLine("pointer = 7");
-                            if ((data[now, (1 + dir) % 4] + data[i, (3 + j) % 4] == 0) && (data[put_index[5], (2 + put_dir[5]) % 4] + data[i, (0 + j) % 4] == 0))
+                            if (((data[now, (1 + dir) % 4] + data[i, (3 + j) % 4] == 0)
+                                || ((data[now, (1 + dir) % 4] == data[i, (3 + j) % 4] )
+                                &&(CanEquel(data[i, (3 + j) % 4])))) 
+                                && ((data[put_index[5], (2 + put_dir[5]) % 4] + data[i, (0 + j) % 4] == 0)
+                                || ((data[put_index[5], (2 + put_dir[5]) % 4] == data[i, (0 + j) % 4] )
+                                &&(CanEquel(data[i, (0 + j) % 4])))))
                             {
                                 count(data, pointer + 1, i, j);
                             }

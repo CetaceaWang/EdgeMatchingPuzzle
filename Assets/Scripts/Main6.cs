@@ -10,6 +10,8 @@ public class Main6 : MonoBehaviour
     string playerPrefsInts;//預設題目
     [SerializeField]
     Transform answers;
+    [SerializeField]
+    GameObject quitButton;
     Transform[] inputs;
     int Num = 7;
     int Dir = 6;
@@ -21,10 +23,14 @@ public class Main6 : MonoBehaviour
     int ans_index = 0;
     void Start()
     {
+#if UNITY_WEBGL
+        quitButton.SetActive(false);
+#endif
         SetInputs();
     }
     public void Solve()
     {
+        ans_index = 0;
         //先將Answers全部關閉
         for (int i = 0;i<answers.childCount;i++)
             answers.GetChild(i).gameObject.SetActive(false);
