@@ -1,4 +1,5 @@
 using System;
+using System.Reflection;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -10,6 +11,8 @@ public class Main : MonoBehaviour
     Transform answers;
     [SerializeField]
     GameObject quitButton;
+    [SerializeField]
+    GameObject message;
     Transform[] inputs;
     int Num = 9;
     int Dir = 4;
@@ -53,10 +56,84 @@ public class Main : MonoBehaviour
         for (int now = 0; now < Num; now++)
         {
             for (int dir = 0; dir < Dir; dir++)
-            {
                 count(data, 0, now, dir);
-            }
         }
+        string ansText="";
+        for (int i = 0; i < ans_index - 1; i++)
+            for (int j = 0; j < 9; j++)
+                ansText += IntToChar(Ans_index[i, j]) + Ans_dir[i, j];
+        //Debug.Log(ansText);
+        DisplayAnswer();
+    }
+    void DisplayAnswer()
+    {
+        message.SetActive(true);
+        if (ans_index>40)
+             message.transform.GetChild(1).GetComponent<Text>().text="Solutions > 40";
+        else
+            message.transform.GetChild(1).GetComponent<Text>().text 
+                = "Solutions = "+ ans_index.ToString();
+    }
+    bool MatrixRotateEqual(int[] indexs1, int[] dirs1, int[] indexs2, int[] dirs2)
+    {
+        int[] outIndexs = new int[9];
+        int[] outDirs = new int[9];
+        for (int i = 0; i < 4; i++)
+        {
+            RotateMatrixs(indexs1, dirs1,i ,out outIndexs, out outDirs);
+            if (MatrixEqual(indexs1,dirs1, outIndexs, outDirs))
+                return true;
+        }
+        return false;
+    }
+    bool MatrixEqual(int[] indexs1, int[] dirs1, int[] indexs2, int[] dirs2)
+    {
+        for (int i = 0; i < 9; i++)
+            if ((dirs1[i] != dirs2[i]) || (indexs1[i] != indexs2[i]))
+                return false;
+        return true;
+    }
+    void RotateMatrixs(int[] indexs, int[] dirs, int rotate,out int[] outIndexs, out int[] outDirs)
+    {
+        outIndexs = indexs;
+        outDirs = dirs;
+        for (int i = 0; i < rotate; i++)
+            RotateMatrix(outIndexs, outDirs, out outIndexs, out outDirs);
+    }
+    void RotateMatrix(int[] indexs, int[] dirs,out int[] outIndexs,out int[] outDirs)
+    { 
+        outIndexs= new int[9];
+        outDirs= new int[9];
+        for (int i = 0; i < 9; i++)
+        {
+            outIndexs[i] = RotateIndex(indexs[i]);
+            outDirs[i] = (dirs[i]+3) %4 ;
+        }
+    }
+    int RotateIndex(int i)
+    {
+        switch (i)
+        {
+            case 0:
+                return 6;
+            case 1:
+                return 3;
+            case 2:
+                return 0;
+            case 3:
+                return 7;
+            case 4:
+                return 4;
+            case 5:
+                return 1;
+            case 6:
+                return 8;
+            case 7:
+                return 5;
+            case 8:
+                return 2;
+        }
+        return -1;
     }
     bool CanEqual(int i)
     {
@@ -71,6 +148,9 @@ public class Main : MonoBehaviour
     }
     void count(int[,] data, int pointer, int now, int dir)
     {
+        //超過 40 組答案就不管了
+        if (ans_index > 40)
+            return;
         put_index[pointer] = now;
         put_dir[pointer] = dir;
         //Console.WriteLine("put_index: ");
@@ -90,8 +170,8 @@ public class Main : MonoBehaviour
                         case 0:
                             //Console.WriteLine("pointer = 0");
                             if ((data[now, (1 + dir) % 4] + data[i, (3 + j) % 4] == 0)
-                                || ((data[now, (1 + dir) % 4] == data[i, (3 + j) % 4])
-                                &&(CanEqual(data[now, (1 + dir) % 4]))))
+                                 || ((data[now, (1 + dir) % 4] == data[i, (3 + j) % 4])
+                                 && (CanEqual(data[now, (1 + dir) % 4]))))
                             {
                                 count(data, pointer + 1, i, j);
                             }
@@ -181,9 +261,9 @@ public class Main : MonoBehaviour
             {
                 if (i == 0)
                 {
-                    //Console.WriteLine("Ans: ");
-                    answers.GetChild(ans_index).gameObject.SetActive(true);
-                    //Debug.Log("Ans: ");
+                    //Console.WriteLine("Ans: ");顯示答案
+                        answers.GetChild(ans_index).gameObject.SetActive(true);
+                    //Debug.Log("ans_index:"+ ans_index);
                 }
                 //Console.Write(put_index[i] + "(" + put_dir[i] + ") ");
                 //Debug.Log(put_index[i] + "(" + put_dir[i] + ") ");
