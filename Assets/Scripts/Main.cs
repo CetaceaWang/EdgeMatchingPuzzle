@@ -19,10 +19,10 @@ public class Main : MonoBehaviour
     int[] put_index = new int[9];//0~8
     int[] put_dir = new int[9];//0~3 應該是逆時針轉
     bool[] state = new bool[9]; //沒用過就會是true
-    int[,] Ans_index = new int[60, 10];
-    int[,] Ans_dir = new int[60, 10];
+    int[,] Ans_index = new int[10000, 10];
+    int[,] Ans_dir = new int[10000, 10];
     int ans_index = 0;
-    bool[] canEqual = new bool[5];//是否可以等於
+    //bool[] canEqual = new bool[5];//是否可以等於
     void Start()
     {
 #if UNITY_WEBGL
@@ -37,7 +37,7 @@ public class Main : MonoBehaviour
         for (int i = 0;i<answers.childCount;i++)
             answers.GetChild(i).gameObject.SetActive(false);
         int[,] data = new int[Num, Dir];
-        SetCanEqual();
+        //SetCanEqual();
         for (int i = 0; i < Num; i++)
         {
             //Console.WriteLine("Input num " + (i));
@@ -45,8 +45,8 @@ public class Main : MonoBehaviour
             {
                 //data[i, j] = Convert.ToInt32(Console.ReadLine());
                 data[i, j] = GetInput(i, j);
-                if (data[i, j] < 0)
-                    canEqual[-data[i, j]] = false;
+                //if (data[i, j] < 0)
+                //    canEqual[-data[i, j]] = false;
                 //Debug.Log("["+i+"]["+j+"]data[i, j]:" + data[i, j]);
             }
             put_index[i] = -1;
@@ -68,74 +68,13 @@ public class Main : MonoBehaviour
     void DisplayAnswer()
     {
         message.SetActive(true);
-        if (ans_index>40)
-             message.transform.GetChild(1).GetComponent<Text>().text="Solutions > 40";
+        if (ans_index>9000)
+             message.transform.GetChild(1).GetComponent<Text>().text= "Solutions > 9000";
         else
-            message.transform.GetChild(1).GetComponent<Text>().text 
+        message.transform.GetChild(1).GetComponent<Text>().text 
                 = "Solutions = "+ ans_index.ToString();
     }
-    bool MatrixRotateEqual(int[] indexs1, int[] dirs1, int[] indexs2, int[] dirs2)
-    {
-        int[] outIndexs = new int[9];
-        int[] outDirs = new int[9];
-        for (int i = 0; i < 4; i++)
-        {
-            RotateMatrixs(indexs1, dirs1,i ,out outIndexs, out outDirs);
-            if (MatrixEqual(indexs1,dirs1, outIndexs, outDirs))
-                return true;
-        }
-        return false;
-    }
-    bool MatrixEqual(int[] indexs1, int[] dirs1, int[] indexs2, int[] dirs2)
-    {
-        for (int i = 0; i < 9; i++)
-            if ((dirs1[i] != dirs2[i]) || (indexs1[i] != indexs2[i]))
-                return false;
-        return true;
-    }
-    void RotateMatrixs(int[] indexs, int[] dirs, int rotate,out int[] outIndexs, out int[] outDirs)
-    {
-        outIndexs = indexs;
-        outDirs = dirs;
-        for (int i = 0; i < rotate; i++)
-            RotateMatrix(outIndexs, outDirs, out outIndexs, out outDirs);
-    }
-    void RotateMatrix(int[] indexs, int[] dirs,out int[] outIndexs,out int[] outDirs)
-    { 
-        outIndexs= new int[9];
-        outDirs= new int[9];
-        for (int i = 0; i < 9; i++)
-        {
-            outIndexs[i] = RotateIndex(indexs[i]);
-            outDirs[i] = (dirs[i]+3) %4 ;
-        }
-    }
-    int RotateIndex(int i)
-    {
-        switch (i)
-        {
-            case 0:
-                return 6;
-            case 1:
-                return 3;
-            case 2:
-                return 0;
-            case 3:
-                return 7;
-            case 4:
-                return 4;
-            case 5:
-                return 1;
-            case 6:
-                return 8;
-            case 7:
-                return 5;
-            case 8:
-                return 2;
-        }
-        return -1;
-    }
-    bool CanEqual(int i)
+    /*bool CanEqual(int i)
     {
         if (i<0)
             return false;
@@ -145,11 +84,11 @@ public class Main : MonoBehaviour
     {
         for (int i = 0; i < canEqual.Length; i++)
             canEqual[i] = true;
-    }
+    }*/
     void count(int[,] data, int pointer, int now, int dir)
     {
-        //超過 40 組答案就不管了
-        if (ans_index > 40)
+        //超過 600 組答案就不管了
+        if (ans_index > 9000)
             return;
         put_index[pointer] = now;
         put_dir[pointer] = dir;
@@ -169,86 +108,89 @@ public class Main : MonoBehaviour
                     {
                         case 0:
                             //Console.WriteLine("pointer = 0");
-                            if ((data[now, (1 + dir) % 4] + data[i, (3 + j) % 4] == 0)
-                                 || ((data[now, (1 + dir) % 4] == data[i, (3 + j) % 4])
-                                 && (CanEqual(data[now, (1 + dir) % 4]))))
-                            {
+                            //if ((data[now, (1 + dir) % 4] + data[i, (3 + j) % 4] == 0)
+                            //     || ((data[now, (1 + dir) % 4] == data[i, (3 + j) % 4])
+                            //     && (CanEqual(data[now, (1 + dir) % 4]))))
+                            if (data[now, (1 + dir) % 4] + data[i, (3 + j) % 4] == 0)
                                 count(data, pointer + 1, i, j);
-                            }
-                            break;
+                              break;
                         case 1:
                             //Console.WriteLine("pointer = 1");
-                            if ((data[now, (1 + dir) % 4] + data[i, (3 + j) % 4] == 0)
-                                || ((data[now, (1 + dir) % 4] == data[i, (3 + j) % 4] ))
-                                &&(CanEqual(data[now, (1 + dir) % 4])))
-                            {
-                                count(data, pointer + 1, i, j);
-                            }
+                            if (data[now, (1 + dir) % 4] + data[i, (3 + j) % 4] == 0)
+                            //if ((data[now, (1 + dir) % 4] + data[i, (3 + j) % 4] == 0)
+                            //    || ((data[now, (1 + dir) % 4] == data[i, (3 + j) % 4] ))
+                            //    &&(CanEqual(data[now, (1 + dir) % 4])))
+                                  count(data, pointer + 1, i, j);
                             break;
                         case 2:
                             //Console.WriteLine("pointer = 2");
-                            if ((data[put_index[0], (2 + put_dir[0]) % 4] + data[i, (0 + j) % 4] == 0)
-                                || ((data[put_index[0], (2 + put_dir[0]) % 4] == data[i, (0 + j) % 4])
-                                &&(CanEqual(data[i, (0 + j) % 4]))))
-                            {
+                            if (data[put_index[0], (2 + put_dir[0]) % 4] + data[i, (0 + j) % 4] == 0)
+                            //    if ((data[put_index[0], (2 + put_dir[0]) % 4] + data[i, (0 + j) % 4] == 0)
+                            //    || ((data[put_index[0], (2 + put_dir[0]) % 4] == data[i, (0 + j) % 4])
+                            //    &&(CanEqual(data[i, (0 + j) % 4]))))
                                 count(data, pointer + 1, i, j);
-                            }
                             break;
                         case 3:
                             //Console.WriteLine("pointer = 3");
-                            if (((data[now, (1 + dir) % 4] + data[i, (3 + j) % 4] == 0)
-                                || ((data[now, (1 + dir) % 4] == data[i, (3 + j) % 4] ))
-                                &&(CanEqual(data[now, (1 + dir) % 4]))) 
-                                && ((data[put_index[1], (2 + put_dir[1]) % 4] + data[i, (0 + j) % 4] == 0)
-                                || ((data[put_index[1], (2 + put_dir[1]) % 4] == data[i, (0 + j) % 4] )
-                                &&(CanEqual(data[i, (0 + j) % 4])))))
-                            {
+                            /*if (((data[now, (1 + dir) % 4] + data[i, (3 + j) % 4] == 0)
+    || ((data[now, (1 + dir) % 4] == data[i, (3 + j) % 4]))
+    && (CanEqual(data[now, (1 + dir) % 4])))
+    && ((data[put_index[1], (2 + put_dir[1]) % 4] + data[i, (0 + j) % 4] == 0)
+    || ((data[put_index[1], (2 + put_dir[1]) % 4] == data[i, (0 + j) % 4])
+    && (CanEqual(data[i, (0 + j) % 4])))))*/
+                            if ((data[now, (1 + dir) % 4] + data[i, (3 + j) % 4] == 0)
+                                && (data[put_index[1], (2 + put_dir[1]) % 4] + data[i, (0 + j) % 4] == 0))
                                 count(data, pointer + 1, i, j);
-                            }
                             break;
                         case 4:
                             //Console.WriteLine("pointer = 4");
-                            if (((data[now, (1 + dir) % 4] + data[i, (3 + j) % 4] == 0)
+                            if ((data[now, (1 + dir) % 4] + data[i, (3 + j) % 4] == 0)
+                                && (data[put_index[2], (2 + put_dir[2]) % 4] 
+                                + data[i, (0 + j) % 4] == 0))
+                              /*  if (((data[now, (1 + dir) % 4] + data[i, (3 + j) % 4] == 0)
                                 || ((data[now, (1 + dir) % 4] == data[i, (3 + j) % 4] )
                                 &&(CanEqual(data[i, (3 + j) % 4]))))
                                 && ((data[put_index[2], (2 + put_dir[2]) % 4] + data[i, (0 + j) % 4] == 0)
                                 || ((data[put_index[2], (2 + put_dir[2]) % 4] == data[i, (0 + j) % 4] )
-                                &&(CanEqual(data[i, (0 + j) % 4])))))
-                            {
+                                &&(CanEqual(data[i, (0 + j) % 4])))))*/
                                 count(data, pointer + 1, i, j);
-                            }
                             break;
                         case 5:
                             //Console.WriteLine("pointer = 5");
-                            if ((data[put_index[3], (2 + put_dir[3]) % 4] + data[i, (0 + j) % 4] == 0)
+                            if (data[put_index[3], (2 + put_dir[3]) % 4] + data[i, (0 + j) % 4] == 0)
+                                /*
+                                if ((data[put_index[3], (2 + put_dir[3]) % 4] + data[i, (0 + j) % 4] == 0)
                                 || ((data[put_index[3], (2 + put_dir[3]) % 4] == data[i, (0 + j) % 4] )
-                                &&(CanEqual(data[i, (0 + j) % 4]))))
-                            {
+                                &&(CanEqual(data[i, (0 + j) % 4]))))*/
                                 count(data, pointer + 1, i, j);
-                            }
                             break;
                         case 6:
                             //Console.WriteLine("pointer = 6");
-                            if (((data[now, (1 + dir) % 4] + data[i, (3 + j) % 4] == 0)
+                            if ((data[now, (1 + dir) % 4] + data[i, (3 + j) % 4] == 0)
+                                && (data[put_index[4], (2 + put_dir[4]) % 4] 
+                                + data[i, (0 + j) % 4] == 0))
+                               /* if (((data[now, (1 + dir) % 4] + data[i, (3 + j) % 4] == 0)
                                 || ((data[now, (1 + dir) % 4] == data[i, (3 + j) % 4])
                                 &&(CanEqual(data[i, (3 + j) % 4])))) 
                                 && ((data[put_index[4], (2 + put_dir[4]) % 4] + data[i, (0 + j) % 4] == 0)
                                 || ((data[put_index[4], (2 + put_dir[4]) % 4] == data[i, (0 + j) % 4] )
-                                &&(CanEqual(data[i, (0 + j) % 4])))))
-                            {
+                                &&(CanEqual(data[i, (0 + j) % 4])))))*/
                                 count(data, pointer + 1, i, j);
-                            }
                             break;
                         case 7:
                             //Console.WriteLine("pointer = 7");
-                            if (((data[now, (1 + dir) % 4] + data[i, (3 + j) % 4] == 0)
-                                || ((data[now, (1 + dir) % 4] == data[i, (3 + j) % 4] )
-                                &&(CanEqual(data[i, (3 + j) % 4])))) 
-                                && ((data[put_index[5], (2 + put_dir[5]) % 4] + data[i, (0 + j) % 4] == 0)
-                                || ((data[put_index[5], (2 + put_dir[5]) % 4] == data[i, (0 + j) % 4] )
-                                &&(CanEqual(data[i, (0 + j) % 4])))))
+                            if ((data[now, (1 + dir) % 4] + data[i, (3 + j) % 4] == 0)
+                                && (data[put_index[5], (2 + put_dir[5]) % 4] 
+                                + data[i, (0 + j) % 4] == 0))
+                            /*if (((data[now, (1 + dir) % 4] + data[i, (3 + j) % 4] == 0)
+|| ((data[now, (1 + dir) % 4] == data[i, (3 + j) % 4])
+&& (CanEqual(data[i, (3 + j) % 4]))))
+&& ((data[put_index[5], (2 + put_dir[5]) % 4] + data[i, (0 + j) % 4] == 0)
+|| ((data[put_index[5], (2 + put_dir[5]) % 4] == data[i, (0 + j) % 4])
+&& (CanEqual(data[i, (0 + j) % 4])))))*/
                             {
                                 count(data, pointer + 1, i, j);
+                                //Debug.Log(ans_index+"|"+ Ans_index[ans_index, i] + "|" + put_index[i]);
                             }
                             break;
                         case 8:
@@ -262,24 +204,131 @@ public class Main : MonoBehaviour
                 if (i == 0)
                 {
                     //Console.WriteLine("Ans: ");顯示答案
+                    if (ans_index <= 40)
                         answers.GetChild(ans_index).gameObject.SetActive(true);
                     //Debug.Log("ans_index:"+ ans_index);
                 }
                 //Console.Write(put_index[i] + "(" + put_dir[i] + ") ");
-                //Debug.Log(put_index[i] + "(" + put_dir[i] + ") ");
-                answers.GetChild(ans_index).GetChild(i).GetComponent<Text>().text 
+                //Debug.Log("ans_index:" + ans_index +":i:"+i + ":"+put_index[i] + "(" + put_dir[i] + ") ");
+                if (ans_index <= 40)
+                    answers.GetChild(ans_index).GetChild(i).GetComponent<Text>().text 
                     = IntToChar(put_index[i])+ put_dir[i] ;
+                //Debug.Log("ans_index:" + ans_index);
                 Ans_index[ans_index, i] = put_index[i];
                 Ans_dir[ans_index, i] = put_dir[i];
                 if (i == 8)
                 {
                     //Console.WriteLine(".");
                     //Debug.Log(".");
-                    ans_index++;
+                    if (!AnswerExist())
+                        ans_index++;
+                    else if (ans_index <= 40)
+                        answers.GetChild(ans_index).gameObject.SetActive(false);
                 }
             }
         }
         state[now] = true;
+    }
+    bool AnswerExist()
+    {
+        int[] intsA;
+        //int[] intsB = new int[Num];
+        int[] intsB = SetInts(ans_index);
+        //DebugInts("B:",intsB);
+        for (int i = 0; i < ans_index; i++)
+        {
+            intsA= SetInts(i);
+            //DebugInts("A:", intsA);
+            if (ArrayRotateEqual(intsA, intsB))
+            {
+                //Debug.Log("i:"+i+"ans_index:"+ans_index);
+                return true;
+            }
+        }
+        return false;
+    }
+    void DebugInts(string head,int[] ints)
+    {
+        string text=head;
+        for (int i = 0; i < Num; i++)
+            text += ints[i].ToString();
+        //Debug.Log(text);
+    }
+    int[] SetInts(int index)
+    {
+        int[] ints = new int[Num];
+        for (int i = 0; i < Num; i++)
+            ints[i] = Ans_index[index, i];
+        return ints;
+    } 
+    bool ArrayEqual(int[] intsA, int[] intsB)
+    {
+        for (int i = 0; i < Num; i++)
+            if (intsA[i] != intsB[i])
+                return false;
+        return true;
+    }
+    bool ArrayRotateEqual(int[] intsA, int[] intsB)
+    {
+        for (int i = 0; i < Dir; i++)
+            if (ArrayEqual(RotateAns(intsA, i), intsB))
+                return true;
+        return false;
+    }
+    int[] RotateAns(int[] ints,int rotate)
+    {
+        int[] returnInts = SetValue(ints);
+        //DebugInts("before rotate:" + rotate.ToString() + ":", returnInts);
+        //DebugInts("ints:" + rotate.ToString() + ":", ints);
+        switch (rotate)
+        {
+            case 1:
+                returnInts[0] = ints[6];
+                returnInts[1] = ints[3];
+                returnInts[2] = ints[0];
+                returnInts[3] = ints[7];
+                returnInts[5] = ints[1];
+                returnInts[6] = ints[8];
+                returnInts[7] = ints[5];
+                returnInts[8] = ints[2];
+                //DebugInts("ints294:" + rotate.ToString() + ":", ints);
+                //DebugInts("rotate:" + rotate.ToString() + ":", returnInts);
+                break;
+            case 2:
+                returnInts[0] = ints[8];
+                returnInts[1] = ints[7];
+                returnInts[2] = ints[6];
+                returnInts[3] = ints[5];
+                returnInts[5] = ints[3];
+                returnInts[6] = ints[2];
+                returnInts[7] = ints[1];
+                returnInts[8] = ints[0];
+                //Debug.Log("2");
+                break;
+            case 3:
+                returnInts[0] = ints[2];
+                returnInts[1] = ints[5];
+                returnInts[2] = ints[8];
+                returnInts[3] = ints[1];
+                returnInts[5] = ints[7];
+                returnInts[6] = ints[0];
+                returnInts[7] = ints[3];
+                returnInts[8] = ints[6];
+                //Debug.Log("3");
+                break;
+            default:
+                //Debug.Log("Default case");
+                break;
+        }
+        //DebugInts("rotate:"+ rotate.ToString()+":", returnInts);
+        return returnInts;
+    }
+    int[] SetValue(int[] intValues)
+    {
+        int[] returnInts = new int[9];
+        for (int i = 0; i < 9; i++)
+            returnInts[i] = intValues[i];
+        return returnInts;
     }
     int GetInput(int i,int j)
     {
